@@ -141,6 +141,16 @@ namespace Quobject.EngineIoClientDotNet.Client
             Hostname = options.Hostname;
             Port = options.Port;
             Query = options.QueryString != null ? ParseQS.Decode(options.QueryString) : new Dictionary<string, string>();
+
+            if (options.Query != null)
+            {
+                foreach (var item in options.Query)
+                {
+                    Query.Add(item.Key,item.Value);
+                }
+            }
+
+
             Upgrade = options.Upgrade;
             Path = (options.Path ?? "/engine.io").Replace("/$", "") + "/";
             TimestampParam = (options.TimestampParam ?? "t");
@@ -380,10 +390,17 @@ namespace Quobject.EngineIoClientDotNet.Client
 
             for (int i = 0; i < this.PrevBufferLen; i++)
             {
-                var callback = this.CallbackBuffer[i];
-                if (callback != null)
+                try
                 {
-                    callback();
+                    var callback = this.CallbackBuffer[i];
+                    if (callback != null)
+                    {
+                        callback();
+                    }
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    //ignore
                 }
             }
             //log.Info(string.Format("OnDrain2 PrevBufferLen={0} WriteBuffer.Count={1}", PrevBufferLen, WriteBuffer.Count));
